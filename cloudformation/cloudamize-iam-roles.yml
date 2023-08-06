@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates IAM role for Cloudamize Onramp team access
+Parameters:
+  externalID:
+    Type: String
+    Default: onramp
+Resources:
+  TerraformAutomationIAMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: 116286067284
+            Action:
+              - "sts:AssumeRole"
+            Condition:
+              StringEquals: 
+                sts:ExternalId: 
+                  - Ref: externalID
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+      RoleName: CloudamizeOnramp
+  ReadOnlyConsoleAccessIAMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: 116286067284
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      RoleName: CloudamizeOnrampReadOnly

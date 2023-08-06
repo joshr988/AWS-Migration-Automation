@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates S3 bucket and DynamoDB backends for Terraform remote storage
+Parameters:
+  Region:
+    Type: String
+    Description: Region where the bucket resides. 
+  CustomerName:
+    Type: String
+    Description: Name of the customer, for s3 bucket naming
+  ServiceAccountRole:
+    Default: "CloudamizeOnramp"
+    Type: String
+Resources:
+  TerraformRemoteStateBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        !Sub 'cloudamize-tfstate-${CustomerName}-${Region}'
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+        - ServerSideEncryptionByDefault: 
+            SSEAlgorithm: 'AES256'
+          BucketKeyEnabled: true
+  TerraformRemoteStateBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        !Sub 'cloudamize-tfstate-${CustomerName}-${Region}'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Id: PutObjPolicy
+        Statement:
+          - Effect: Allow
+            Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            Resource:
+            - Fn::Sub: 'arn:aws:s3:::${TerraformRemoteStateBucket}/*'
+            - Fn::Sub: 'arn:aws:s3:::${TerraformRemoteStateBucket}'
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${ServiceAccountRole}'
+  TerraformRemoteStateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: LockID
+        AttributeType: S
+      KeySchema:
+      - AttributeName: LockID
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: '1'
+        WriteCapacityUnits: '1'
+      TableName: !Sub 'terraform-locking-${CustomerName}'
+
+Outputs:
+  TerraformRemoteStateBucket:
+    Value:
+      Ref: TerraformRemoteStateBucket
+  TerraformRemoteStateBucketPolicy:
+    Value:
+      Ref: TerraformRemoteStateBucketPolicy
+  TerraformRemoteStateTable:
+    Value:
+      Ref: TerraformRemoteStateTable

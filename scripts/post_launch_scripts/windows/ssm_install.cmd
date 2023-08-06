@@ -1,0 +1,1 @@
+powershell -executionpolicy bypass -command "C:\Program Files (x86)\AWS Replication Agent\post_launch\WindowsSSMAgentInstall.ps1"
