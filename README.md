@@ -1,4 +1,4 @@
-OnRamp Landing Zone Terraform Deployment
+Landing Zone Terraform Deployment
 ----------
 
 This repository contains Terraform code for depploying an AWS Landing Zone with the following main resources: 
